@@ -46,9 +46,7 @@ define KernelPackage/appletalk
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=Appletalk protocol support
   KCONFIG:= \
-        CONFIG_ATALK \
-        CONFIG_DEV_APPLETALK \
-        CONFIG_IPDDP=n
+        CONFIG_ATALK
   FILES:=$(LINUX_DIR)/net/appletalk/appletalk.ko
   AUTOLOAD:=$(call AutoLoad,40,appletalk)
 endef
@@ -759,6 +757,25 @@ endef
 $(eval $(call KernelPackage,sched-act-pedit))
 
 
+define KernelPackage/sched-act-gate
+  SUBMENU:=$(NETWORK_SUPPORT_MENU)
+  TITLE:=Traffic gate control
+  DEPENDS:=+kmod-sched-core
+  KCONFIG:=CONFIG_NET_ACT_GATE
+  FILES:=$(LINUX_DIR)/net/sched/act_gate.ko
+  AUTOLOAD:=$(call AutoProbe,act_gate)
+endef
+
+define KernelPackage/sched-act-gate/description
+ Gate tc action (IEEE 802.1Qci) that passes or drops ingress packets
+ based on a time schedule.
+endef
+
+$(eval $(call KernelPackage,sched-act-gate))
+
+
+
+
 define KernelPackage/sched-act-police
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=Traffic Policing
@@ -838,6 +855,22 @@ endef
 $(eval $(call KernelPackage,sched-cake))
 
 
+define KernelPackage/sched-cbs
+  SUBMENU:=$(NETWORK_SUPPORT_MENU)
+  TITLE:=Credit Based Shaper (CBS)
+  DEPENDS:=+kmod-sched-core
+  KCONFIG:=CONFIG_NET_SCH_CBS
+  FILES:=$(LINUX_DIR)/net/sched/sch_cbs.ko
+  AUTOLOAD:=$(call AutoProbe,sch_cbs)
+endef
+
+define KernelPackage/sched-cbs/description
+ Credit Based Shaper (IEEE 802.1Qav) for Time-Sensitive Networking.
+endef
+
+$(eval $(call KernelPackage,sched-cbs))
+
+
 define KernelPackage/sched-connmark
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=Traffic shaper conntrack mark support
@@ -890,6 +923,41 @@ define KernelPackage/sched-ets/description
 endef
 
 $(eval $(call KernelPackage,sched-ets))
+
+
+define KernelPackage/sched-dualpi2
+  SUBMENU:=$(NETWORK_SUPPORT_MENU)
+  TITLE:=Dual Queue PI Square scheduler (DUALPI2)
+  DEPENDS:=+kmod-sched-core
+  KCONFIG:=CONFIG_NET_SCH_DUALPI2
+  FILES:=$(LINUX_DIR)/net/sched/sch_dualpi2.ko
+  AUTOLOAD:=$(call AutoProbe,sch_dualpi2)
+endef
+
+define KernelPackage/sched-dualpi2/description
+ Dual Queue Coupled AQM (RFC 9332) with low latency for L4S traffic.
+endef
+
+$(eval $(call KernelPackage,sched-dualpi2))
+
+
+define KernelPackage/sched-etf
+  SUBMENU:=$(NETWORK_SUPPORT_MENU)
+  TITLE:=Earliest TxTime First scheduler (ETF)
+  DEPENDS:=+kmod-sched-core
+  KCONFIG:=CONFIG_NET_SCH_ETF
+  FILES:=$(LINUX_DIR)/net/sched/sch_etf.ko
+  AUTOLOAD:=$(call AutoProbe,sch_etf)
+endef
+
+define KernelPackage/sched-etf/description
+ Earliest TxTime First scheduler, sends packets at the time set with
+ SO_TXTIME. Used for Time-Sensitive Networking.
+endef
+
+$(eval $(call KernelPackage,sched-etf))
+
+
 
 
 define KernelPackage/sched-flower
@@ -1045,6 +1113,22 @@ endef
 $(eval $(call KernelPackage,sched-skbprio))
 
 
+define KernelPackage/sched-taprio
+  SUBMENU:=$(NETWORK_SUPPORT_MENU)
+  TITLE:=Time Aware Priority scheduler (TAPRIO)
+  DEPENDS:=+kmod-sched-core +kmod-sched-mqprio-common
+  KCONFIG:=CONFIG_NET_SCH_TAPRIO
+  FILES:=$(LINUX_DIR)/net/sched/sch_taprio.ko
+  AUTOLOAD:=$(call AutoProbe,sch_taprio)
+endef
+
+define KernelPackage/sched-taprio/description
+ Time Aware Priority scheduler (IEEE 802.1Qbv) for Time-Sensitive Networking.
+endef
+
+$(eval $(call KernelPackage,sched-taprio))
+
+
 define KernelPackage/bpf-test
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=Test Berkeley Packet Filter functionality
@@ -1062,7 +1146,7 @@ define KernelPackage/sched
   SUBMENU:=$(NETWORK_SUPPORT_MENU)
   TITLE:=Extra traffic schedulers
   DEPENDS:=+kmod-sched-core +kmod-sched-ets +kmod-sched-act-pedit +kmod-sched-gred \
-	+LINUX_6_12:kmod-lib-crc32c +kmod-lib-textsearch
+	+kmod-lib-textsearch
   KCONFIG:= \
 	CONFIG_NET_SCH_CODEL \
 	CONFIG_NET_SCH_MULTIQ \
@@ -1246,21 +1330,12 @@ define KernelPackage/sctp
   TITLE:=SCTP protocol kernel support
   KCONFIG:=\
      CONFIG_IP_SCTP \
-     CONFIG_SCTP_DBG_MSG=n \
      CONFIG_SCTP_DBG_OBJCNT=n \
-     CONFIG_SCTP_HMAC_NONE=n \
-     CONFIG_SCTP_HMAC_SHA1=n \
-     CONFIG_SCTP_HMAC_MD5=y \
-     CONFIG_SCTP_COOKIE_HMAC_SHA1=n \
-     CONFIG_SCTP_COOKIE_HMAC_MD5=y \
-     CONFIG_SCTP_DEFAULT_COOKIE_HMAC_NONE=n \
-     CONFIG_SCTP_DEFAULT_COOKIE_HMAC_SHA1=n \
-     CONFIG_SCTP_DEFAULT_COOKIE_HMAC_SHA256=n@ge6.18 \
-     CONFIG_SCTP_DEFAULT_COOKIE_HMAC_MD5=y
+     CONFIG_SCTP_DEFAULT_COOKIE_HMAC_SHA256=y \
+     CONFIG_SCTP_DEFAULT_COOKIE_HMAC_NONE=n
   FILES:= $(LINUX_DIR)/net/sctp/sctp.ko
   AUTOLOAD:= $(call AutoLoad,32,sctp)
-  DEPENDS:=+LINUX_6_12:kmod-lib-crc32c +kmod-crypto-md5 +kmod-crypto-hmac \
-    +kmod-udptunnel4 +kmod-udptunnel6
+  DEPENDS:=+kmod-udptunnel4 +kmod-udptunnel6
 endef
 
 define KernelPackage/sctp/description
